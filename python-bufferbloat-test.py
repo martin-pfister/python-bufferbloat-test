@@ -13,6 +13,8 @@ PING_INTERVAL = 0.1
 DOWNLOAD_URL = "https://nbg1-speed.hetzner.com/10GB.bin"
 # Specify duration in seconds of each phase (unloaded and loaded pings):
 DURATION = 15
+# Number of parallel download connections:
+PARALLEL_DOWNLOADS = 4
 
 def tcp_ping(host, port, timeout=0.5):
     start = time.time()
@@ -76,9 +78,9 @@ def calculate_ping_stats(rtts):
         'max': max(rtts),
     }
 
-def print_download_stats(result):
-    bytes = result.get('bytes',0)
-    elapsed = result.get('elapsed',1)
+def print_download_stats(results_list):
+    bytes = sum(res.get('bytes', 0) for res in results_list)
+    elapsed = max((res.get('elapsed', 1) for res in results_list)) 
     download_speed = bytes * 8 / elapsed  # in bits/second
     print(f"Average download speed: {download_speed/1e6:.1f} Mbps")
 
@@ -91,18 +93,22 @@ def run_latency_test(loaded=False):
     threads.append(t_ping)
     t_ping.start()
 
-    download_result = {}
+    download_results_list = []
     if loaded:
-        t_dl = threading.Thread(target=download_worker, args=(DOWNLOAD_URL, DURATION, stop_event, download_result))
-        threads.append(t_dl)
-        t_dl.start()
+        for i in range(PARALLEL_DOWNLOADS):
+            # Each thread gets its own dictionary in the shared list to update
+            download_result = {}
+            download_results_list.append(download_result)
+            t_dl = threading.Thread(target=download_worker, args=(DOWNLOAD_URL, DURATION, stop_event, download_result))
+            threads.append(t_dl)
+            t_dl.start()
 
     time.sleep(DURATION)
     stop_event.set()
     for t in threads:
         t.join()
 
-    return rtts, download_result
+    return rtts, download_results_list
 
 def main():
     rtts1, _ = run_latency_test(loaded=False)
