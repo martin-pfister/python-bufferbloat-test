@@ -107,7 +107,7 @@ def run_latency_test(loaded=False):
 def main():
     rtts1, _ = run_latency_test(loaded=False)
     stats1 = calculate_ping_stats(rtts1)
-    print('                      ', *[f'{s:>6}' for s in ('min', '25%', 'median', 'mean', '75%', '95%', 'max')])
+    print('                       ', *[f'{s:>6}' for s in ('min', '25%', 'median', 'mean', '75%', '95%', 'max')])
     print('Unloaded latency in ms:', *[f'{stats1[s]:6.0f}' for s in ('min', '25%', '50%', 'mean', '75%', '95%', 'max')])
 
     rtts2, dl_res = run_latency_test(loaded=True)
