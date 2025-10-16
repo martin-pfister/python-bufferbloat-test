@@ -1,0 +1,7 @@
+[project]
+name = "python-bufferbloat-test"
+version = "0.0.1"
+requires-python = ">=3.13"
+dependencies = [
+    "requests",
+]
