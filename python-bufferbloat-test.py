@@ -12,7 +12,7 @@ PING_INTERVAL = 0.1
 # Network interface will be loaded by downloading a large file from this URL:
 DOWNLOAD_URL = "https://nbg1-speed.hetzner.com/10GB.bin"
 # Specify duration in seconds of each phase (unloaded and loaded pings):
-DURATION = 15
+DURATION = 60
 # Number of parallel download connections:
 PARALLEL_DOWNLOADS = 4
 
