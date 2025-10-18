@@ -3,7 +3,7 @@ import socket
 import time
 import threading
 import requests
-from statistics import mean
+from statistics import mean, stdev
 
 # Configuration:
 # Ping time will be measured using TCP connect on HTTPS port 443. Specify hosts and ping interval in seconds:
@@ -64,6 +64,13 @@ def percentile(data, q):
     upper_value = sorted_data[int(rank) + 1]
     return lower_value + (rank - int(rank)) * (upper_value - lower_value)
 
+def jitter(rtts):
+    result = 0
+    for i in range(len(rtts) - 1):
+        result += abs(rtts[i+1] - rtts[i])
+    result /= (len(rtts) - 1)
+    return result
+
 def calculate_ping_stats(rtts):
     if not rtts:
         print("Error: Could not reach any host.")
@@ -76,6 +83,8 @@ def calculate_ping_stats(rtts):
         '75%': percentile(rtts, 75),
         '95%': percentile(rtts, 95),
         'max': max(rtts),
+        'std': stdev(rtts),
+        'jit': jitter(rtts),
     }
 
 def print_download_stats(results_list):
@@ -113,13 +122,13 @@ def run_latency_test(loaded=False):
 def main():
     rtts1, _ = run_latency_test(loaded=False)
     stats1 = calculate_ping_stats(rtts1)
-    print('                       ', *[f'{s:>6}' for s in ('min', '25%', 'median', 'mean', '75%', '95%', 'max')])
-    print('Unloaded latency in ms:', *[f'{stats1[s]:6.0f}' for s in ('min', '25%', '50%', 'mean', '75%', '95%', 'max')])
+    print('                       ', *[f'{s:>6}' for s in ('min', '25%', 'median', 'mean', '75%', '95%', 'max', 'std', 'jit')])
+    print('Unloaded latency in ms:', *[f'{stats1[s]:6.0f}' for s in ('min', '25%', '50%', 'mean', '75%', '95%', 'max', 'std', 'jit')])
 
     rtts2, dl_res = run_latency_test(loaded=True)
     stats2 = calculate_ping_stats(rtts2)
-    print('Loaded latency in ms:  ', *[f'{stats2[s]:6.0f}' for s in ('min', '25%', '50%', 'mean', '75%', '95%', 'max')])
-    print('Difference in ms:      ', *[f'{round(stats2[s])-round(stats1[s]):+6}' for s in ('min', '25%', '50%', 'mean', '75%', '95%', 'max')])
+    print('Loaded latency in ms:  ', *[f'{stats2[s]:6.0f}' for s in ('min', '25%', '50%', 'mean', '75%', '95%', 'max', 'std', 'jit')])
+    print('Difference in ms:      ', *[f'{round(stats2[s])-round(stats1[s]):+6}' for s in ('min', '25%', '50%', 'mean', '75%', '95%', 'max', 'std', 'jit')])
     print_download_stats(dl_res)
 
 if __name__ == '__main__':
