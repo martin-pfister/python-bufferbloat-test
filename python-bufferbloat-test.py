@@ -9,12 +9,16 @@ from statistics import mean, stdev
 # Ping time will be measured using TCP connect on HTTPS port 443. Specify hosts and ping interval in seconds:
 PING_HOSTS = ('1.1.1.1', '1.0.0.1', '8.8.8.8', '8.8.4.4', '9.9.9.9', '149.112.112.112')
 PING_INTERVAL = 0.1
-# Network interface will be loaded by downloading a large file from this URL:
-DOWNLOAD_URL = "https://nbg1-speed.hetzner.com/10GB.bin"
+# Network interface will be loaded by downloading large files from these URLs:
+DOWNLOAD_URLS = (
+    'https://nbg1-speed.hetzner.com/10GB.bin',
+    'https://github.com/szalony9szymek/large/releases/download/free/large',
+    'https://download.thinkbroadband.com/5GB.zip',
+)
 # Specify duration in seconds of each phase (unloaded and loaded pings):
-DURATION = 60
+DURATION = 5
 # Number of parallel download connections:
-PARALLEL_DOWNLOADS = 4
+PARALLEL_DOWNLOADS = 6
 
 def tcp_ping(host, port, timeout=0.5):
     start = time.time()
@@ -108,7 +112,7 @@ def run_latency_test(loaded=False):
             # Each thread gets its own dictionary in the shared list to update
             download_result = {}
             download_results_list.append(download_result)
-            t_dl = threading.Thread(target=download_worker, args=(DOWNLOAD_URL, DURATION, stop_event, download_result))
+            t_dl = threading.Thread(target=download_worker, args=(DOWNLOAD_URLS[i % len(DOWNLOAD_URLS)], DURATION, stop_event, download_result))
             threads.append(t_dl)
             t_dl.start()
 
