@@ -16,7 +16,7 @@ DOWNLOAD_URLS = (
     'https://download.thinkbroadband.com/5GB.zip',
 )
 # Specify duration in seconds of each phase (unloaded and loaded pings):
-DURATION = 5
+DURATION = 60
 # Number of parallel download connections:
 PARALLEL_DOWNLOADS = 6
 
